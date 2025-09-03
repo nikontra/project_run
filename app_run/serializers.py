@@ -4,7 +4,17 @@ from django.contrib.auth.models import User
 from app_run.models import Run
 
 
+
+class UserRunSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username',
+                  'first_name', 'last_name')
+
+
 class RunSerializer(serializers.ModelSerializer):
+    athlete_data = UserRunSerializer(source='athlete', read_only=True)
+
     class Meta:
         model = Run
         fields = '__all__'
