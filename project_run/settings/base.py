@@ -39,11 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'debug_toolbar',
 
     'app_run',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -118,3 +120,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 COMPANY_NAME = 'Жизнь это бег!'
 SLOGAN = 'Если встречный ветер усиливается, значит, ты набираешь скорость!'
 CONTACTS = 'Город Задунайск, улица 30 Лет СССР, дом 30'
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
