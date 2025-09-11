@@ -19,7 +19,7 @@ from django.urls import path, include
 from rest_framework import routers
 from debug_toolbar.toolbar import debug_toolbar_urls
 
-from app_run.views import company_details, RunViewSet, UserViewSet
+from app_run.views import company_details, RunViewSet, UserViewSet, RunStartAPIView, RunStopAPIView
 
 router = routers.DefaultRouter()
 router.register('api/runs', RunViewSet)
@@ -28,5 +28,7 @@ router.register('api/users', UserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/company_details/', company_details),
+    path('api/runs/<int:run_id>/start/', RunStartAPIView.as_view()),
+    path('api/runs/<int:run_id>/stop/', RunStopAPIView.as_view()),
     path('', include(router.urls)),
 ] + debug_toolbar_urls()
