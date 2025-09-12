@@ -14,7 +14,7 @@ from app_run.models import Run
 from app_run.serializers import RunSerializer, UserSerializer
 
 
-class RunPagination(PageNumberPagination):
+class Pagination(PageNumberPagination):
     page_size_query_param = 'size'
 
 
@@ -32,7 +32,7 @@ def company_details(request):
 class RunViewSet(viewsets.ModelViewSet):
     queryset = Run.objects.all().select_related('athlete')
     serializer_class = RunSerializer
-    pagination_class = RunPagination
+    pagination_class = Pagination
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     filterset_fields = ('status', 'athlete',)
     ordering_fields = ('created_at',)
@@ -63,6 +63,7 @@ class RunStopAPIView(APIView):
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.filter(is_superuser=False)
     serializer_class = UserSerializer
+    pagination_class = Pagination
     filter_backends = (SearchFilter, OrderingFilter,)
     search_fields = ('first_name', 'last_name',)
     ordering_fields = ('date_joined',)
