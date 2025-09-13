@@ -13,6 +13,6 @@ class Run(models.Model):
         ("finished", "Забег закончен")
     ]
     created_at = models.DateTimeField(auto_now_add=True)
-    athlete = models.ForeignKey(User, on_delete=models.CASCADE)
+    athlete = models.ForeignKey(User, on_delete=models.CASCADE, related_name="runs")
     comment = models.TextField()
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="init")
