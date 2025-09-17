@@ -1,10 +1,6 @@
-from email.policy import default
-
 from django.db import models
 from django.contrib.auth.models import User
 
-
-# Create your models here.
 
 
 class Run(models.Model):
@@ -22,4 +18,9 @@ class Run(models.Model):
 class AthleteInfo(models.Model):
     weight = models.IntegerField(null=True, blank=True)
     goals = models.CharField(max_length=200)
-    user_id = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user_id = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name="athlete_info"
+    )
