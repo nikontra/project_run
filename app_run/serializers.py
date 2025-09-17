@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from app_run.models import Run
-
+from app_run.models import Run, AthleteInfo
 
 
 class UserRunSerializer(serializers.ModelSerializer):
@@ -37,5 +36,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'date_joined',
                   'username', 'last_name',
                   'first_name', 'type', 'runs_finished')
+
+
+class AthleteInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AthleteInfo
+        fields = '__all__'
 
 

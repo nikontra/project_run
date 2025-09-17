@@ -10,8 +10,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app_run.models import Run
-from app_run.serializers import RunSerializer, UserSerializer
+from app_run.models import Run, AthleteInfo
+from app_run.serializers import RunSerializer, UserSerializer, AthleteInfoSerializer
 
 
 class Pagination(PageNumberPagination):
@@ -76,4 +76,25 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         if type == 'athlete':
             qs = qs.filter(is_staff=False)
         return qs
+
+class AthleteInfoAPIView(APIView):
+    def get(self, request, athlete_id):
+        user = get_object_or_404(User, id=athlete_id)
+        athlete_info, created = AthleteInfo.objects.get_or_create(user_id=user)
+        serializer = AthleteInfoSerializer(athlete_info)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, athlete_id):
+        if not(0 < request.data['weight'] < 900):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        user = get_object_or_404(User, id=athlete_id)
+        athlete_info, created = AthleteInfo.objects.update_or_create(
+            user_id=user,
+            defaults={
+                "weight": request.data['weight'],
+                "goals": request.data['goals']
+            }
+        )
+        serializer = AthleteInfoSerializer(athlete_info)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
