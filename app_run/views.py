@@ -85,7 +85,7 @@ class AthleteInfoAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, athlete_id):
-        if not(0 < request.data['weight'] < 900):
+        if not(0 < int(request.data['weight']) < 900):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         get_object_or_404(User, id=athlete_id)
         athlete_info, created = AthleteInfo.objects.update_or_create(
