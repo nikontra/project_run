@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.serializers import serialize
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter
 from rest_framework.filters import SearchFilter
@@ -10,8 +11,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app_run.models import Run, AthleteInfo
-from app_run.serializers import RunSerializer, UserSerializer, AthleteInfoSerializer
+from app_run.models import Run, AthleteInfo, Challenge
+from app_run.serializers import RunSerializer, UserSerializer, AthleteInfoSerializer, ChallengeSerializer
+
+CHALLENGES = [
+    'Сделай 10 Забегов!'
+]
 
 
 class Pagination(PageNumberPagination):
@@ -27,6 +32,23 @@ def company_details(request):
         'contacts': settings.CONTACTS
     }
     return Response(details)
+
+
+def create_challenge(request, run):
+    athlete = run.athlete
+    serializer = UserSerializer(athlete)
+    runs_finished = serializer.data['runs_finished']
+    if runs_finished % 10 == 0:
+        Challenge.objects.create(
+            full_name = CHALLENGES[0],
+            athlete = athlete
+        )
+
+class ChallengeView(generics.ListAPIView):
+    queryset = Challenge.objects.all()
+    serializer_class = ChallengeSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('athlete',)
 
 
 class RunViewSet(viewsets.ModelViewSet):
@@ -56,6 +78,7 @@ class RunStopAPIView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         run.status = 'finished'
         run.save()
+        create_challenge(request, run)
         serializer = RunSerializer(run)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -79,9 +102,9 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
 class AthleteInfoAPIView(APIView):
     def get(self, request, athlete_id):
-        get_object_or_404(User, id=athlete_id)
+        user = get_object_or_404(User.objects.select_related('athlete_info'), id=athlete_id)
         athlete_info, created = AthleteInfo.objects.get_or_create(pk=athlete_id)
-        serializer = AthleteInfoSerializer(athlete_info)
+        serializer = AthleteInfoSerializer(user.athlete_info)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, athlete_id):
@@ -89,10 +112,8 @@ class AthleteInfoAPIView(APIView):
             weight = int(request.data['weight'])
         except ValueError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if not(0 < weight < 900):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         goals = request.data['goals']
-        if type(goals) != str:
+        if not(0 < weight < 900) or type(goals) != str:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         get_object_or_404(User, id=athlete_id)
         athlete_info, created = AthleteInfo.objects.update_or_create(
