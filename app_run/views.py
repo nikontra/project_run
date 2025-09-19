@@ -44,6 +44,7 @@ def create_challenge(request, run):
             athlete = athlete
         )
 
+
 class ChallengeView(generics.ListAPIView):
     queryset = Challenge.objects.all()
     serializer_class = ChallengeSerializer
@@ -99,6 +100,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         if type == 'athlete':
             qs = qs.filter(is_staff=False)
         return qs
+
 
 class AthleteInfoAPIView(APIView):
     def get(self, request, athlete_id):
