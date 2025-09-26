@@ -1,3 +1,4 @@
+from geopy.distance import geodesic
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.serializers import serialize
@@ -35,17 +36,6 @@ def company_details(request):
     return Response(details)
 
 
-def create_challenge(request, run):
-    athlete = run.athlete
-    serializer = UserSerializer(athlete)
-    runs_finished = serializer.data['runs_finished']
-    if runs_finished % 10 == 0:
-        Challenge.objects.create(
-            full_name = CHALLENGES[0],
-            athlete = athlete
-        )
-
-
 class ChallengeView(generics.ListAPIView):
     queryset = Challenge.objects.all()
     serializer_class = ChallengeSerializer
@@ -75,13 +65,29 @@ class RunStartAPIView(APIView):
 
 class RunStopAPIView(APIView):
     def post(self, request, run_id):
-        run = get_object_or_404(Run, id=run_id)
+        run = get_object_or_404(Run.objects.select_related('athlete'), id=run_id)
         if run.status != 'in_progress':
             return Response(status=status.HTTP_400_BAD_REQUEST)
         run.status = 'finished'
+
+        positions = Position.objects.filter(run=run.id)
+        if len(positions) > 1:
+            distance = 0
+            for i in range(len(positions) - 1):
+                distance += geodesic(
+                    (positions[i].latitude, positions[i].longitude),
+                    (positions[i + 1].latitude, positions[i + 1].longitude)).km
+            run.distance = round(distance, 1)
         run.save()
-        create_challenge(request, run)
+
+        serializer = UserSerializer(run.athlete)
+        if serializer.data['runs_finished'] % 10 == 0:
+            Challenge.objects.create(
+                full_name=CHALLENGES[0],
+                athlete=run.athlete
+            )
         serializer = RunSerializer(run)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
