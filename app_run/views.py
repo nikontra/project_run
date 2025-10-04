@@ -1,3 +1,5 @@
+from xxlimited_35 import error
+
 from geopy.distance import geodesic
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -5,7 +7,7 @@ from django.core.serializers import serialize
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.filters import OrderingFilter
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
@@ -141,3 +143,19 @@ class PositionViewSet(viewsets.ModelViewSet):
     serializer_class = PositionSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('run',)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        for field in ('latitude', 'longitude'):
+            if field in data:
+                try:
+                    data[field] = round(data[field], 4)
+                except (ValueError, TypeError):
+                    return Response({"error": f"Передано некорректное значение {field}"},
+                                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = PositionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
