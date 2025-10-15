@@ -15,6 +15,9 @@ class Run(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="init")
     distance = models.FloatField(null=True, blank=True)
 
+    def __str__(self):
+        return f'Атлет - {self.athlete}, забег - {self.id}, статус - {self.status}'
+
 
 class AthleteInfo(models.Model):
     weight = models.IntegerField(null=True, blank=True)
@@ -29,6 +32,9 @@ class AthleteInfo(models.Model):
 class Challenge(models.Model):
     full_name = models.CharField(max_length=50)
     athlete = models.ForeignKey(User, on_delete=models.CASCADE, related_name="challenges")
+
+    def __str__(self):
+        return self.full_name
 
 
 class Position(models.Model):

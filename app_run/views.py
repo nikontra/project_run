@@ -19,7 +19,8 @@ from app_run.serializers import RunSerializer, UserSerializer, AthleteInfoSerial
     PositionSerializer
 
 CHALLENGES = [
-    'Сделай 10 Забегов!'
+    'Сделай 10 Забегов!',
+    'Пробеги 50 километров!'
 ]
 
 
@@ -88,8 +89,12 @@ class RunStopAPIView(APIView):
                 full_name=CHALLENGES[0],
                 athlete=run.athlete
             )
+        if serializer.data['runs_finished'] % 50 == 0:
+            Challenge.objects.create(
+                full_name=CHALLENGES[1],
+                athlete=run.athlete
+            )
         serializer = RunSerializer(run)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
