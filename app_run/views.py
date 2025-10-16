@@ -80,7 +80,7 @@ class RunStopAPIView(APIView):
                 distance += geodesic(
                     (positions[i].latitude, positions[i].longitude),
                     (positions[i + 1].latitude, positions[i + 1].longitude)).km
-            run.distance = round(distance, 1)
+            run.distance = round(distance, 3)
         run.save()
 
         serializer = UserSerializer(run.athlete)
