@@ -40,4 +40,4 @@ class Challenge(models.Model):
 class Position(models.Model):
     run = models.ForeignKey(Run, on_delete=models.CASCADE, related_name="positions")
     latitude = models.DecimalField(max_digits=6, decimal_places=4)
-    longitude = models.DecimalField(max_digits=6, decimal_places=4)
+    longitude = models.DecimalField(max_digits=7, decimal_places=4)
