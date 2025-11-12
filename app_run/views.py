@@ -185,5 +185,5 @@ class CollectibleItemAPIView(APIView):
                 serializer.save()
             else:
                 failed_rows.append(row)
-            return Response(failed_rows, status=status.HTTP_201_CREATED)
+            return Response(failed_rows, status=status.HTTP_200_OK)
 
