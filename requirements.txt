@@ -6,3 +6,4 @@ djangorestframework==3.16.0
 django-debug-toolbar==6.0.0
 django-filter==25.1
 geopy==2.4.1
+openpyxl==3.1.5

@@ -1,5 +1,3 @@
-from xxlimited_35 import error
-
 from django.db.models import Sum
 from geopy.distance import geodesic
 from django.conf import settings
@@ -13,15 +11,25 @@ from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from openpyxl import load_workbook
 
-from app_run.models import Run, AthleteInfo, Challenge, Position
+from app_run.models import Run, AthleteInfo, Challenge, Position, CollectibleItem
 from app_run.serializers import RunSerializer, UserSerializer, AthleteInfoSerializer, ChallengeSerializer, \
-    PositionSerializer
+    PositionSerializer, ColletibleItemSerializer
 
 CHALLENGES = [
     'Сделай 10 Забегов!',
     'Пробеги 50 километров!'
 ]
+
+COLLECTIBLE_ITEM_FIELDS = {
+    'Name': 'name',
+    'UID': 'uid',
+    'Latitude': 'latitude',
+    'Longitude': 'longitude',
+    'Value': 'value',
+    'URL': 'picture'
+}
 
 
 class Pagination(PageNumberPagination):
@@ -151,3 +159,31 @@ class PositionViewSet(viewsets.ModelViewSet):
     serializer_class = PositionSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('run',)
+
+
+class CollectibleItemAPIView(APIView):
+    def get(self, request):
+        items = CollectibleItem.objects.all()
+        serializer = ColletibleItemSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"error": "Файл с данными не передан"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            wb = load_workbook(file, read_only=True)
+            ws = wb.active
+        except Exception as e:
+            return Response({"error": f"Ошибка чтения файла: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        rows = [i for i in ws.rows]
+        failed_rows = []
+        for row in rows[1:]:
+            row = [i.value for i in row]
+            serializer = ColletibleItemSerializer(data=row, many=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                failed_rows.append(row)
+            return Response(failed_rows, status=status.HTTP_201_CREATED)
+

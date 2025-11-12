@@ -1,8 +1,8 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from app_run.models import Run, AthleteInfo, Challenge, Position
+
+from app_run.models import Run, AthleteInfo, Challenge, Position, CollectibleItem
 
 
 class UserRunSerializer(serializers.ModelSerializer):
@@ -73,5 +73,32 @@ class PositionSerializer(serializers.ModelSerializer):
         return value
 
 
+class ColletibleItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CollectibleItem
+        fields = '__all__'
+
+        def validate_latitude(self, value):
+            if type(value) != float or not -90 <= value <= 90 or not value:
+                raise serializers.ValidationError()
+            return value
+
+        def validate_longitude(self, value):
+            if type(value) != float or not -180 <= value <= 180 or not value:
+                raise serializers.ValidationError()
+            return value
+
+        def validate_picture(self, value):
+            if (not value or type(value) != str or
+                    not value.startswith('http://') or not value.startswith('https://')):
+                raise serializers.ValidationError()
+            return value
+
+        def validate(self, data):
+            if (not data['name'] or type(data['name']) != str or
+                    not data['uid'] or type(data['uid']) != str or
+                    not data['value'] or type(data['value']) != int):
+                raise serializers.ValidationError()
+            return data
 
 
